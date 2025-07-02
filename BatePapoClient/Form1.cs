@@ -9,14 +9,28 @@ namespace BatePapoClient
         {
             InitializeComponent();
             InitializeSignalR();
-
         }
-
-        private void InitializeSignalR()
+        private async Task InitializeSignalR()
         {
-            throw new NotImplementedException();
+            _connection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5000/chathub")
+            .Build();
+            _connection.On<string, string>("ReceiveMessage", (user, message)) =>
+              {
+                this.Invoke(Action)(() =>
+                {
+                    lstMessages.Items.Add($"{user}: {message}");
+                }));
+            });
+            try
+            {
+                await _connection.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                lstMessages.Items.Add($"Erro ao conta: {ex.Message}");
+            }
         }
-
         private void button1_Click(object sender, EventArgs e)
         {
 
