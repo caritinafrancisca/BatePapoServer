@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace BatePapoClient
@@ -15,9 +16,9 @@ namespace BatePapoClient
             _connection = new HubConnectionBuilder()
             .WithUrl("http://localhost:5000/chathub")
             .Build();
-            _connection.On<string, string>("ReceiveMessage", (user, message)) =>
+            _connection.On<string, string>("ReceiveMessage", (user, message) =>
               {
-                this.Invoke(Action)(() =>
+                this.Invoke((Action)(() =>
                 {
                     lstMessages.Items.Add($"{user}: {message}");
                 }));
@@ -28,12 +29,20 @@ namespace BatePapoClient
             }
             catch (Exception ex)
             {
-                lstMessages.Items.Add($"Erro ao conta: {ex.Message}");
+                lstMessages.Items.Add($"Erro ao contar: {ex.Message}");
             }
         }
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
-
+            try
+            {
+                await _connection.InvokeAsync("SendMessage",txtUser.Text, txtMessage.Text);
+                txtMessage.Clear();
+            }
+            catch (Exception ex)
+            {
+                lstMessages.Items.Add($"Erro ao enviar: {ex.Message}");        
+            }
         }
     }
 }
